@@ -1,0 +1,11 @@
+# Node
+node_modules/
+
+# Vite
+dist/
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log

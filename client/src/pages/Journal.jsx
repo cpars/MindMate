@@ -1,20 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function Journal() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [entries, setEntries] = useState([]);
-
-  useEffect(() => {
-    const storedEntries = JSON.parse(
-      localStorage.getItem("mindmate-journal") || "[]"
-    );
-    setEntries(storedEntries);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("mindmate-journal", JSON.stringify(entries));
-  }, [entries]);
+  const [entries, setEntries] = useState(() => {
+    try {
+      const stored = localStorage.getItem("mindmate-journal");
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      console.error("Failed to load journal data:", e);
+      return [];
+    }
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -23,9 +20,17 @@ function Journal() {
       content,
       date: new Date().toLocaleString(),
     };
-    setEntries([newEntry, ...entries]);
+    const updated = [newEntry, ...entries];
+    setEntries(updated);
+    localStorage.setItem("mindmate-journal", JSON.stringify(updated));
     setTitle("");
     setContent("");
+  };
+
+  const handleDelete = (indexToDelete) => {
+    const updated = entries.filter((_, i) => i !== indexToDelete);
+    setEntries(updated);
+    localStorage.setItem("mindmate-journal", JSON.stringify(updated));
   };
 
   return (
@@ -53,9 +58,11 @@ function Journal() {
       <ul style={{ marginTop: "1rem" }}>
         {entries.map((entry, index) => (
           <li key={index} style={{ marginBottom: "1rem" }}>
-            <strong>{entry.title}</strong> <br />
+            <strong>{entry.title}</strong>
+            <br />
             <small>{entry.date}</small>
             <p>{entry.content}</p>
+            <button onClick={() => handleDelete(index)}>Delete</button>
           </li>
         ))}
       </ul>
